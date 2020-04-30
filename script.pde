@@ -1,8 +1,12 @@
 String globalScreen; // variable permettant de connaître l'écran actuel
 int level = 1 ; //niveau maximal disponible pour le joueur
-int life 
+int niveauEnCours;
+int questionPosee;
+int step = 1; // étape d'affichage pour les questions particulières (changement d'affichage...)
+int life;
 
-String pseudo; 
+
+String pseudo;//faire déclaration des pseudo (variable "pseudo") avec random (faire tableau avec liste pseudo puis créer string pseudo pour en choisir un aléatoire (nom tableau[random(tableau.length)]))))
 int nameLength = 0; // longueur du pseudo tapé dans l'écran du pseudo
 PFont fontClavier; //police pour tout ce qui sera tapé
 
@@ -23,13 +27,25 @@ PImage level2PresentationSurb; // présentation du niveau 2 en rouge sur l'écra
 PImage level3Presentation; // présentation du niveau 3 en rouge sur l'écran des niveaux
 PImage level3PresentationSurb; // présentation du niveau 3 en rouge sur l'écran des niveaux en surbrillance
 PImage noPresentation; // niveau non débloqué sur l'écran des niveaux
+PImage screenPseudo; // écran pour commenter le pseudo non choisi par le joueur
+PImage[][] questionsImages = new PImage[3][5]; // tableau de tableaux qui contiendra les images des questions
+PImage[] questions2level1 = new PImage[2]; // tableau contenant les différents intitulés de la question 2, niveau 1 (hormis la première affichée)
+PImage questionBackground; // arrière plan des questions par défaut
+PImage reponseQCMBackground; // arrière plan des réponses aux QCM
 
+int minXbonneReponse;
+int maxXbonneReponse;
+int minYbonneReponse;
+int maxYbonneReponse;
+
+String reponseEcrite; // réponse écrite par le joueur
+boolean reponseAEcrire; // true si la réponse est à écrire, false sinon
 
 
 
 void setup() {
  size(1280, 800); // taille du jeu : 1280x800
- globalScreen="écran principal"; //initialisation de l'écran 
+ globalScreen="écran niveaux"; //initialisation de l'écran 
  
  // Chargement des images
  background = loadImage("background_global.png"); 
@@ -46,14 +62,26 @@ void setup() {
  level2PresentationSurb = loadImage("LevelsMenu/P1_surb.png");
  level3PresentationSurb = loadImage("LevelsMenu/P1_surb.png");
  noPresentation = loadImage("LevelsMenu/non_debloque.png");
+ for (int i = 1; i <=3; i++) {
+   for (int j = 1; j <=5; j++) {
+     questionsImages[i-1][j-1] = loadImage("ImagesQR/P"+str(i-1)+"Q"+str(j-1));
+   }
+ }
+ questions2level1[0] = loadImage("ImagesQR/P1Q2b.png");
+ questions2level1[1] = loadImage("ImagesQR/P1Q2c.png");
+ questionBackground = loadImage("question_default_background.png");
+ reponseQCMBackground = loadImage("responses_default_backgrounds.png");
  
- 
- fontClavier = createFont("fontPourClavier.ttf", 90); // chargement de la police pour ce qui sera tapé au clavier
+ fontClavier = createFont("fontPourClavier.ttf", 90); // chargement de la police pour ce qui sera tapé au clavier & pour l'affichage du pseudo
  
  // création d'un tableau pour générer un pseudo aléatire au joueur (déplacé dans le setup)
   String [] listePseudo = {"The Rock" , "Severus Rogue" , "Sylvain Liaboeuf" , "Chaise de bureau" , "Boîte d'anchois" , "Tractopelle" , "Jul" , "Stylo 4 couleurs" , "David Pujadas" , "XxDarkkillerdu42xX" , "Julien Le Perce" , "Calculatrice Casio" , "Pangolin" , "Sophie la Girafe" , "Rocky Sifredo" , "Barre d'espace" , "Caméscope" , "Tente Quechua"} ;
-  int indexpseudo = int(random(listePseudo.length)) ;
+  int indexpseudo = int(random(listePseudo.length - 1)) ;
   pseudo = listePseudo[indexpseudo];
+  
+  // chargement de l'image pour l'écran de commentaire du pseudo
+  if (indexpseudo <= 2) screenPseudo = loadImage("screen_after_nickname_2.png");
+  else screenPseudo = loadImage("screen_after_nickname.png");
 }
 
 
@@ -72,10 +100,10 @@ void draw(){
     bonneReponse(); 
   } else if (globalScreen == "mauvaise réponse") {
     mauvaiseReponse();
+  } else if (globalScreen == "écran commentaire pseudo") {
+    commentairePseudo();  
   }
 }
-
-
 
 
 void mouseClicked() {     // fonction qui verifie le clic du bouton valider
@@ -167,8 +195,6 @@ void checkReponse() {
 }
 
 
-
-
 void ecranPrincipal () {
    image(principalScreen, 0, 0); // affiche le fond d'écran menu
    // coordonnées de la zone du bouton Jouer :
@@ -179,6 +205,7 @@ void ecranPrincipal () {
    if (mouseX>minX && mouseX<maxX && mouseY >minY && mouseY <maxY) { // vérifie si la souris est dans la zone du bouton Jouer
      image(boutonJouerSurb, 0, 0); //sélectionne le bouton en surbrillance
      cursor(HAND); // curseur en forme de main
+     // MELINA : CREER UNE FONCTION "verifierClic" DETECTANT LE CLIC ET QUI CHANGE LA VARIABLE "globalScreen" EN CONSEQUENCE
    } else {
      image(boutonJouer, 0, 0); // bouton normal
      cursor(ARROW); // curseur normal (flèche)
@@ -201,6 +228,8 @@ void ecranNom() {
      fill(#000000);
      text(pseudo.substring(0, nameLength), 640, 465);
    }
+   // (MELINA => UTILISER UNE FONCTION KEYTYPED QUI PERMET D'INCREMENTER LA VARIABLE "nameLength" 
+   //  POUR POUVOIR AFFICHER LE NOM (ou décrémenter en effacant) = cf https://processing.org/reference/keyTyped_.html pour la doc sur la fonction keyTyped) (en cours)
 }
 
 void ecranNiveau() {
@@ -227,4 +256,52 @@ void ecranNiveau() {
   } else {
     image(level3Presentation, 0, 530);
   }
+}
+
+void commentairePseudo() {
+  image(screenPseudo, 0, 0); 
+  textSize(90);
+  textAlign(CENTER);
+  fill(#000000);
+  text(pseudo, 640, 340);
+}
+
+void question() {
+  image(questionBackground, 0, 0);
+  
+  // !! affichage numéros de question !!
+  
+  // affichage de la question
+  if (questionPosee != 2 || niveauEnCours != 1 || step == 1) {
+    image(questionsImages[niveauEnCours - 1][questionPosee - 1], 178,47); // affichage de l'intitulé : - 1 car la numérotation des questions/niveaux démarre à 1, celle des tableaux à 0
+    
+  } else { // cas particulier de la question 2
+    if (step == 2) image(questions2level1[1], 178,47);
+    else if (step == 3) image(questions2level1[2],178,47);
+    else image(questionsImages[niveauEnCours - 1][questionPosee - 1],178,47);
+  }
+  
+  // affichage des réponses 
+  if (niveauEnCours == 2 || (niveauEnCours == 3 && questionPosee != 1)) propositionsQCM(); // affichage des propositions QCM normales
+  else if (niveauEnCours == 1 && questionPosee != 5) reponseAEcrire(); // affichage de l'interface d'écriture
+  else if (niveauEnCours == 1 && questionPosee == 5) question5niveau1(); // affichage du niveau concerné (numéro question)
+  else if (niveauEnCours == 3 && questionPosee == 1) question1niveau3(); // (fiole violette)
+}
+
+void reponseAEcrire() {
+  image(formNom, 0, 0); // on va reprendre le même écran pour écrire
+   // coordonnées de la zone du bouton Valider :
+   int minX = 367;
+   int maxX = 367+545;
+   int minY = 549;
+   int maxY = 549+110;
+   if (mouseX>minX && mouseX<maxX && mouseY >minY && mouseY <maxY) { // vérifie si la souris est dans la zone du bouton Valider
+     image(boutonValiderSurb, 0, 0); //affiche le bouton valider en surbrillance
+   }
+   if (reponseEcrite.length()>0) {
+     textSize(90);
+     textAlign(CENTER);
+     fill(#000000);
+     text(reponseEcrite, 640, 465);
+   }
 }
