@@ -1,9 +1,12 @@
 String globalScreen; // variable permettant de connaître l'écran actuel
 int level = 1 ; //niveau maximal disponible pour le joueur
+int life 
 
-String pseudo;//faire déclaration des pseudo (variable "pseudo") avec random (faire tableau avec liste pseudo puis créer string pseudo pour en choisir un aléatoire (nom tableau[random(tableau.length)]))))
+String pseudo; 
 int nameLength = 0; // longueur du pseudo tapé dans l'écran du pseudo
 PFont fontClavier; //police pour tout ce qui sera tapé
+
+String alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789éèêëàùç-_@*¤ " ;
 
 // images principales
 PImage background; //fond d'écran
@@ -75,27 +78,94 @@ void draw(){
 
 
 
-void mouseClicked() {     // fonction qui verifier le clic du bouton valider
+void mouseClicked() {     // fonction qui verifie le clic du bouton valider
    if (globalScreen == "écran principal") {
-     int minXecranprincipal = 367 ; // soit tu crées les variables et tu les utilises dans la condition, soit tu ne les crées pas et tu mets leur contenu directement dans le if mais pas les deux !
-     int maxXecranprincipal = 367+545 ;
-     int minYecranprincipal = 549 ;
-     int maxYecranprincipal = 549+110 ;
-       if (mouseX>367 + mouseX<367+545 + mouseY>549 + mouseY<549+110) { // !!!! c'est && pour ET et non + !!!!!
-           globalScreen == "écran nom" ; // un seul = pour attibuer une variable, et == (ou === c'est la même chose) pour vérifier si une variable vaut cette valeur !!!!
+       if (mouseX>367 && mouseX<367+545 && mouseY>549 && mouseY<549+110) { 
+           globalScreen = "écran nom" ; 
       }
-   }
-}     
-
-
-
-void keyTyped () { // attention ! avant de faire tout ce que tu a fait après, il faut d'abord vérifier si l'on est bien sur l'écran du pseudo...
-  String [] pseudochoisi = println ("typed" + int(key) + " " + keyCode) ; // tu fais quoi ici ?? tu as déclaré un tableau et dedans tu mets une fonction...
-     if (nameLength < listePseudo.length /* mais encore... ? déjà la longueur du pseudo c'est pseudo.length, là tu vérifie la longueur du tableau des pseudos. il faut aussi vérifier que la lettre tapée (variable key) soit bien une lettre ou un chiffre. Pour cela, crée un tableau de String au tout début du code (avec les autres variables) contenant toutes les lettres (majuscule ET minuscule), les chiffres et un - (pour les pseudos) et vérifie si ce tableau inclut key (avec la fonction nomDeLaVariableTableau.includes(key))*/) {
-       nameLength ++ // tu as oublié le ; ainsi que le } pour fermer la condition !
-        if (nameLength // ensuite tu vérifies si key vaut "RETURN" (effacer) pour décrémenter nameLength (si supérieur à 0 bien sûr), et tu fais une troisième condition en vérifiant si nameLength == pseudo.length et key == "ENTER" (entrée) afin de passer à l'écran suivant (celui du troll sur le pseudo)
+   }     
+  if (globalScreen == "écran niveau") {
+    if (mouseX> 40 && mouseX< 1220 && mouseY> 113 && mouseY< 290) {
+      globalScreen = "question" ;
+      questionPosee = 1 ;
+      niveauEnCours = 1 ;
+      life = 4 ;
+    }
+    if (mouseX> 40 && mouseX< 1220 && mouseY> 332 && mouseY< 509) {
+      globalScreen = "question" ;
+      questionPosee = 1 ;
+      niveauEnCours = 2 ;
+      life = 3 ;
+    }
+     if (mouseX> 40 && mouseX< 1220 && mouseY> 551 && mouseY< 728) {
+      globalScreen = "question" ;
+      questionPosee = 1 ;
+      niveauEnCours = 3 ;
+      life = 2 ;
+    }
+  }
+  if (globalScreen == "question" && (niveauEnCours != 1 || questionPosee == 5 )) {
+    if (mouseX > minXbonneReponse && mouseX < maxXbonneReponse && mouseY > minYbonneReponse && mouseY < maxYbonneReponse) {
+      globalScreen = "bonne réponse" ;
+    } else {
+      life-- ;
+      if (life == 0) {
+        globalScreen = "mauvaise réponse" ;
+      }
+    }
+  }
+  if (globalScreen == "bonne réponse") {
+    if (questionPosee == 5) {
+      if (niveauEnCours == level) {
+        level++ ;
+      } 
+      globalScreen = "écran niveau" ;
+    } else { 
+      globalScreen = "question" ;
+      questionPosee++ ;
+    }
+  }
+}
   
   
+
+
+
+void keyTyped () { 
+     if (globalScreen == "écran nom")  {
+     if (nameLength < pseudo.length() && match(alphabet , str(key)) !=null ) { //fonction qui vérifie si le caractère taper est dans le tableau "alphabet"
+       nameLength ++ ; 
+     } 
+     else if (nameLength>0 && key == RETURN) {
+          nameLength -- ;
+     } 
+     else if (nameLength == pseudo.length() && key == ENTER) {
+         globalScreen = "écran commentaire pseudo" ; 
+        }
+    }
+    if (globalScreen == "question" && reponseAEcrire == true) {
+      if (match(alphabet , str(key)) !=null ) {
+        reponseEcrite = reponseEcrite + str(key) ;
+      } else if (key == RETURN && reponseEcrite.length() != 0) {
+        reponseEcrite = reponseEcrite.substring(0,reponseEcrite.length()-1) ;
+      } else if (key == ENTER) {
+        checkReponse() ;    
+    }
+  }
+}
+  
+
+void checkReponse() {
+  if ((questionPosee == 1 && reponseEcrite == "10*10") || (questionPosee == 2 && reponseEcrite == "2" && step == 4) || (questionPosee == 3 && reponseEcrite.toLowerCase() == pseudo.toLowerCase()) || (questionPosee == 4 && reponseEcrite == "4")) {
+      globalScreen = "bonne réponse" ;
+  } else {
+    life-- ; 
+      if (life == 0) {
+        globalScreen = "mauvaise réponse" ;
+     }
+  }
+}
+
 
 
 
@@ -109,7 +179,6 @@ void ecranPrincipal () {
    if (mouseX>minX && mouseX<maxX && mouseY >minY && mouseY <maxY) { // vérifie si la souris est dans la zone du bouton Jouer
      image(boutonJouerSurb, 0, 0); //sélectionne le bouton en surbrillance
      cursor(HAND); // curseur en forme de main
-     // MELINA : CREER UNE FONCTION "verifierClic" DETECTANT LE CLIC ET QUI CHANGE LA VARIABLE "globalScreen" EN CONSEQUENCE
    } else {
      image(boutonJouer, 0, 0); // bouton normal
      cursor(ARROW); // curseur normal (flèche)
@@ -132,8 +201,6 @@ void ecranNom() {
      fill(#000000);
      text(pseudo.substring(0, nameLength), 640, 465);
    }
-   // (MELINA => UTILISER UNE FONCTION KEYTYPED QUI PERMET D'INCREMENTER LA VARIABLE "nameLength" 
-   //  POUR POUVOIR AFFICHER LE NOM (ou décrémenter en effacant) = cf https://processing.org/reference/keyTyped_.html pour la doc sur la fonction keyTyped) (en cours)
 }
 
 void ecranNiveau() {
