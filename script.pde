@@ -4,7 +4,11 @@ int niveauEnCours;
 int questionPosee;
 int step = 1; // étape d'affichage pour les questions particulières (changement d'affichage...)
 int life;
-
+int[] answersOrderQCM = {0, 1, 2, 3}; // ordre des indexs de réponses aux QCM pour l'affichage
+int[] positionXReponsesQCM = {47, 687};
+int[] positionYReponsesQCM = {383, 590};
+int largeurReponses = 546; // X
+int hauteurReponses = 110; // Y
 
 String pseudo;//faire déclaration des pseudo (variable "pseudo") avec random (faire tableau avec liste pseudo puis créer string pseudo pour en choisir un aléatoire (nom tableau[random(tableau.length)]))))
 int nameLength = 0; // longueur du pseudo tapé dans l'écran du pseudo
@@ -32,20 +36,25 @@ PImage[][] questionsImages = new PImage[3][5]; // tableau de tableaux qui contie
 PImage[] questions2level1 = new PImage[2]; // tableau contenant les différents intitulés de la question 2, niveau 1 (hormis la première affichée)
 PImage questionBackground; // arrière plan des questions par défaut
 PImage reponseQCMBackground; // arrière plan des réponses aux QCM
+PImage formQuestion; // case pour écrire les réponses au clavier
+PImage[][][] reponsesQCM = new PImage[2][5][4];
+PImage[][][] reponsesQCMsurb = new PImage[2][5][4];
+
+
 
 int minXbonneReponse;
 int maxXbonneReponse;
 int minYbonneReponse;
 int maxYbonneReponse;
 
-String reponseEcrite; // réponse écrite par le joueur
+String reponseEcrite = ""; // réponse écrite par le joueur
 boolean reponseAEcrire; // true si la réponse est à écrire, false sinon
 
 
 
 void setup() {
  size(1280, 800); // taille du jeu : 1280x800
- globalScreen="écran niveaux"; //initialisation de l'écran 
+ globalScreen="écran niveau"; //initialisation de l'écran 
  
  // Chargement des images
  background = loadImage("background_global.png"); 
@@ -64,13 +73,31 @@ void setup() {
  noPresentation = loadImage("LevelsMenu/non_debloque.png");
  for (int i = 1; i <=3; i++) {
    for (int j = 1; j <=5; j++) {
-     questionsImages[i-1][j-1] = loadImage("ImagesQR/P"+str(i-1)+"Q"+str(j-1));
+     questionsImages[i-1][j-1] = loadImage("ImagesQR/P"+str(i)+"Q"+str(j)+".png");
    }
  }
  questions2level1[0] = loadImage("ImagesQR/P1Q2b.png");
  questions2level1[1] = loadImage("ImagesQR/P1Q2c.png");
  questionBackground = loadImage("question_default_background.png");
  reponseQCMBackground = loadImage("responses_default_backgrounds.png");
+ for (int i = 0; i < 2; i++) { // chargement des images réponses QCM
+   for (int j = 0; j < 5; j++) {
+     if (j != 0 && i != 1) { // seule question des deux derniers niveaux sans QCM
+       for (int k = 0; k < 4; k++) {
+         reponsesQCM[i][j][k] = loadImage("ImagesQR/P"+str(i+2)+"Q"+str(j+1)+"R"+str(k+1)+".png");
+       }
+     }
+   }
+ }
+ for (int i = 0; i < 2; i++) { // chargement des images réponses QCM en surbrillance
+   for (int j = 0; j < 5; j++) {
+     if (j != 0 && i != 1) { // seule question des deux derniers niveaux sans QCM
+       for (int k = 0; k < 4; k++) {
+         reponsesQCMsurb[i][j][k] = loadImage("ImagesQR-survol/P"+str(i+2)+"Q"+str(j+1)+"R"+str(k+1)+".png");
+       }
+     }
+   }
+ }
  
  fontClavier = createFont("fontPourClavier.ttf", 90); // chargement de la police pour ce qui sera tapé au clavier & pour l'affichage du pseudo
  
@@ -97,9 +124,9 @@ void draw(){
   } else if (globalScreen == "question") {
     question();
   } else if (globalScreen == "bonne réponse") {
-    bonneReponse(); 
+//    bonneReponse(); 
   } else if (globalScreen == "mauvaise réponse") {
-    mauvaiseReponse();
+//    mauvaiseReponse();
   } else if (globalScreen == "écran commentaire pseudo") {
     commentairePseudo();  
   }
@@ -108,7 +135,7 @@ void draw(){
 
 void mouseClicked() {     // fonction qui verifie le clic du bouton valider
    if (globalScreen == "écran principal") {
-       if (mouseX>367 && mouseX<367+545 && mouseY>549 && mouseY<549+110) { 
+       if (mouseX>318 && mouseX<961 && mouseY<591 && mouseY>396) { 
            globalScreen = "écran nom" ; 
       }
    }     
@@ -199,13 +226,12 @@ void ecranPrincipal () {
    image(principalScreen, 0, 0); // affiche le fond d'écran menu
    // coordonnées de la zone du bouton Jouer :
    int minX = 318;
-   int maxX = 318+643;
+   int maxX = 961;
    int minY = 396;
-   int maxY = 396+165;
+   int maxY = 591;
    if (mouseX>minX && mouseX<maxX && mouseY >minY && mouseY <maxY) { // vérifie si la souris est dans la zone du bouton Jouer
      image(boutonJouerSurb, 0, 0); //sélectionne le bouton en surbrillance
      cursor(HAND); // curseur en forme de main
-     // MELINA : CREER UNE FONCTION "verifierClic" DETECTANT LE CLIC ET QUI CHANGE LA VARIABLE "globalScreen" EN CONSEQUENCE
    } else {
      image(boutonJouer, 0, 0); // bouton normal
      cursor(ARROW); // curseur normal (flèche)
@@ -235,26 +261,26 @@ void ecranNom() {
 void ecranNiveau() {
   image(bgLevels, 0, 0);
   
-  if (mouseX > 40 && mouseX < 1220 && mouseY > 113 && mouseY < 290) {
+  if (mouseX > 40 && mouseX < 1220 && mouseY > 113 && mouseY < 290) { //<>//
     image(level1PresentationSurb, 0, 92);
   } else {
-    image(level1Presentation, 0, 92);
+    image(level1Presentation, 0, 92); //<>//
   }
   
-  if (level < 2) {
+  if (level < 2) { //<>//
     image(noPresentation, 0, 311);
   } else if (mouseX > 40 && mouseX < 1220 && mouseY > 332 && mouseY < 509) {
-    image(level2PresentationSurb, 0, 311);
+    image(level2PresentationSurb, 0, 311); //<>//
   } else {
-    image(level2Presentation, 0, 311);
+    image(level2Presentation, 0, 311); //<>//
   }
   
-  if (level < 3) {
+  if (level < 3) { //<>//
     image(noPresentation, 0, 530);
   } else if (mouseX > 40 && mouseX < 1220 && mouseY > 551 && mouseY < 728) {
-    image(level3PresentationSurb, 0, 530);
+    image(level3PresentationSurb, 0, 530); //<>//
   } else {
-    image(level3Presentation, 0, 530);
+    image(level3Presentation, 0, 530); //<>//
   }
 }
 
@@ -283,13 +309,13 @@ void question() {
   
   // affichage des réponses 
   if (niveauEnCours == 2 || (niveauEnCours == 3 && questionPosee != 1)) propositionsQCM(); // affichage des propositions QCM normales
-  else if (niveauEnCours == 1 && questionPosee != 5) reponseAEcrire(); // affichage de l'interface d'écriture
+  else if (niveauEnCours == 1 && questionPosee != 5) reponseAEcrire(); // affichage de l'interface d'écritur
   else if (niveauEnCours == 1 && questionPosee == 5) question5niveau1(); // affichage du niveau concerné (numéro question)
   else if (niveauEnCours == 3 && questionPosee == 1) question1niveau3(); // (fiole violette)
 }
 
-void reponseAEcrire() {
-  image(formNom, 0, 0); // on va reprendre le même écran pour écrire
+void reponseAEcrire() { // pour toutes les questions du niveau 1 (sauf 5)
+  image(formQuestion, 0, 0); // écran pour écrire
    // coordonnées de la zone du bouton Valider :
    int minX = 367;
    int maxX = 367+545;
@@ -304,4 +330,56 @@ void reponseAEcrire() {
      fill(#000000);
      text(reponseEcrite, 640, 465);
    }
+}
+
+void propositionsQCM() {
+  for (int i = 0; i < 4; i++) {
+    if (mouseX > positionXReponsesQCM[i < 1 ? i : i - 2] && mouseX < positionXReponsesQCM[i < 1 ? i : i - 2] + largeurReponses && mouseY > positionYReponsesQCM[i < 1 ? i : i - 2] && mouseY < positionYReponsesQCM[i < 1 ? i : i - 2] + hauteurReponses) {
+      image(reponsesQCMsurb[niveauEnCours-2][questionPosee-1][answersOrderQCM[i]], positionXReponsesQCM[i < 1 ? i : i - 2], positionYReponsesQCM[i < 1 ? i : i - 2]);
+      cursor(HAND);
+    } else {
+      image(reponsesQCM[niveauEnCours-2][questionPosee-1][answersOrderQCM[i]], positionXReponsesQCM[i < 1 ? i : i - 2], positionYReponsesQCM[i < 1 ? i : i - 2]);
+      cursor(ARROW);
+    }
+    if (answersOrderQCM[i] == 0) {
+      minXbonneReponse = positionXReponsesQCM[i < 1 ? i : i - 2];
+      maxXbonneReponse = positionXReponsesQCM[i < 1 ? i : i - 2] + largeurReponses;
+      minYbonneReponse = positionYReponsesQCM[i < 1 ? i : i - 2];
+      maxYbonneReponse = positionYReponsesQCM[i < 1 ? i : i - 2] + hauteurReponses;
+    }
+  }
+}
+
+
+int[] melanger(int[]arr) { // mélange un array d'entiers
+  int valeurARemplacer;
+  int index;
+  for(int i = 0; i < arr.length; i++) {
+    index  = (int)random(arr.length); // prendre un nouvel index au hasard
+    valeurARemplacer = arr[i]; // stocke l'ancienne valeur à échanger
+    arr[i] = arr[index]; // échange les 2 valeurs
+    arr[index] = valeurARemplacer;
+  }
+  return arr;
+}
+
+
+void question5niveau1() {
+  image(formQuestion, 0, 0); // écran pour écrire mais non utilisable
+  // coordonnées de la zone du bouton Valider :
+   int minX = 367;
+   int maxX = 367+545;
+   int minY = 549;
+   int maxY = 549+110;
+   
+   minXbonneReponse = 70;
+   maxXbonneReponse = 100;
+   minYbonneReponse = 80;
+   maxYbonneReponse = 140;
+   if (mouseX>minX && mouseX<maxX && mouseY >minY && mouseY <maxY) { // vérifie si la souris est dans la zone du bouton Valider
+     image(boutonValiderSurb, 0, 0); //affiche le bouton valider en surbrillance
+     cursor(HAND);
+   } else if (mouseX>minXbonneReponse && mouseX<maxXbonneReponse && mouseY >minYbonneReponse && mouseY <maxYbonneReponse) { // vérifie si la souris pointe bien sur la question
+     cursor(HAND);
+   } else cursor(ARROW);
 }
