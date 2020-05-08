@@ -133,43 +133,51 @@ void draw(){
 }
 
 
-void mouseClicked() {     // fonction qui verifie le clic du bouton valider
-   if (globalScreen == "écran principal") {
-       if (mouseX>318 && mouseX<961 && mouseY<591 && mouseY>396) { 
-           globalScreen = "écran nom" ; 
-      }
-   }     
-  if (globalScreen == "écran niveau") {
-    if (mouseX> 40 && mouseX< 1220 && mouseY> 113 && mouseY< 290) {
+void mouseClicked() {    
+  if (globalScreen == "écran principal") {        // fonction qui vérifie le clic du bouton jouer
+    if (mouseX> 318 && mouseX< 961 && mouseY> 396 && mouseY< 591) {
+      globalScreen = "écran nom" ;
+    }
+  }
+  if (globalScreen == "écran nom") {        //fonction qui vérifie le clic du bouton valider 
+   if (mouseX>367 && mouseX<367+545 && mouseY>549 && mouseY<549+110) {
+     globalScreen = "écran commentaire pseudo" ;
+   }
+  }
+  if (globalScreen == "écran commentaire pseudo") {        //fonction qui permet le passage à l'écran niveau en claiquant n'importe ou sur l'écran commentaire pseudo
+      globalScreen = "écran niveau" ;
+  }
+  if (globalScreen == "écran niveau") { 
+      if (mouseX> 40 && mouseX< 1220 && mouseY> 113 && mouseY< 290) {       // fonction qui vérifie le clic pour lancer le niveau 1 
       globalScreen = "question" ;
       questionPosee = 1 ;
       niveauEnCours = 1 ;
       life = 4 ;
     }
-    if (mouseX> 40 && mouseX< 1220 && mouseY> 332 && mouseY< 509) {
+    if (mouseX> 40 && mouseX< 1220 && mouseY> 332 && mouseY< 509) {        // fonction qui vérifie le clic pour lancer le niveau 2
       globalScreen = "question" ;
       questionPosee = 1 ;
       niveauEnCours = 2 ;
       life = 3 ;
     }
-     if (mouseX> 40 && mouseX< 1220 && mouseY> 551 && mouseY< 728) {
+     if (mouseX> 40 && mouseX< 1220 && mouseY> 551 && mouseY< 728) {        // fonction qui vérifie le clic pour lancer le niveau 3
       globalScreen = "question" ;
       questionPosee = 1 ;
       niveauEnCours = 3 ;
       life = 2 ;
     }
   }
-  if (globalScreen == "question" && (niveauEnCours != 1 || questionPosee == 5 )) {
+  if (globalScreen == "question" && (niveauEnCours != 1 || questionPosee == 5 )) {        // fonction qui vérifie si la réponse sur laquelle on clic est la bonne
     if (mouseX > minXbonneReponse && mouseX < maxXbonneReponse && mouseY > minYbonneReponse && mouseY < maxYbonneReponse) {
       globalScreen = "bonne réponse" ;
-    } else {
+    } else {        // fonction qui permet de gérer le nombre de vie en cas de mauvaise réponse
       life-- ;
       if (life == 0) {
         globalScreen = "mauvaise réponse" ;
       }
     }
   }
-  if (globalScreen == "bonne réponse") {
+  if (globalScreen == "bonne réponse") {        // fonction qui gère le changement de question et de niveau en cas de bonne réponse 
     if (questionPosee == 5) {
       if (niveauEnCours == level) {
         level++ ;
@@ -198,7 +206,7 @@ void keyTyped () {
          globalScreen = "écran commentaire pseudo" ; 
         }
     }
-    if (globalScreen == "question" && reponseAEcrire == true) {
+    if (globalScreen == "question" && reponseAEcrire == true) {        // fonction qui gère l'écriture des réponses
       if (match(alphabet , str(key)) !=null ) {
         reponseEcrite = reponseEcrite + str(key) ;
       } else if (key == RETURN && reponseEcrite.length() != 0) {
@@ -210,10 +218,10 @@ void keyTyped () {
 }
   
 
-void checkReponse() {
+void checkReponse() {      // fonction qui verifie si les réponses écrites sont juste pour passer à la suivante 
   if ((questionPosee == 1 && reponseEcrite == "10*10") || (questionPosee == 2 && reponseEcrite == "2" && step == 4) || (questionPosee == 3 && reponseEcrite.toLowerCase() == pseudo.toLowerCase()) || (questionPosee == 4 && reponseEcrite == "4")) {
       globalScreen = "bonne réponse" ;
-  } else {
+  } else {      // fonction qui fait perdre une vie si la réponse écrite est fausse et perdre le niveau si le joueur n'a plus de vie
     life-- ; 
       if (life == 0) {
         globalScreen = "mauvaise réponse" ;
