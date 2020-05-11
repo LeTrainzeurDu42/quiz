@@ -177,7 +177,7 @@ void mouseClicked() {
       questionPosee = 1 ;
       niveauEnCours = 1 ;
       life = 4 ;
-      musiqueDeFond.pause() ;
+      pauseMusique() ;
       musiqueNiveau1.rewind() ;
       musiqueNiveau1.loop() ;
       musiqueNiveau1.play() ;
@@ -187,7 +187,7 @@ void mouseClicked() {
       questionPosee = 1 ;
       niveauEnCours = 2 ;
       life = 3 ;
-      musiqueNiveau1.pause() ;
+      pauseMusique() ;
       musiqueNiveau2.rewind() ;
       musiqueNiveau2.loop() ;
       musiqueNiveau2.play() ;
@@ -197,7 +197,7 @@ void mouseClicked() {
       questionPosee = 1 ;
       niveauEnCours = 3 ;
       life = 2 ;
-      musiqueNiveau2.pause() ;
+      pauseMusique() ;
       musiqueNiveau3.rewind() ;
       musiqueNiveau3.loop() ;
       musiqueNiveau3.play() ;
@@ -225,11 +225,16 @@ void mouseClicked() {
   if (globalScreen == "bonne réponse") {        // fonction qui gère le changement de question et de niveau en cas de bonne réponse 
     if (questionPosee == 5) {
       if (niveauEnCours == level) {
+        pauseMusique() ;
         winDuNiveau.rewind() ;
         winDuNiveau.play() ;
         level++ ;
       } 
       globalScreen = "écran niveau" ;
+      pauseMusique() ;
+      musiqueDeFond.rewind() ;
+      musiqueDeFond.loop() ;
+      musiqueDeFond.play() ;
     } else { 
       globalScreen = "question" ;
       questionPosee++ ;
@@ -238,6 +243,10 @@ void mouseClicked() {
   }
   if (globalScreen == "mauvaise réponse") {
       globalScreen = "écran niveau" ;
+      pauseMusique() ;
+      musiqueDeFond.rewind() ;
+      musiqueDeFond.loop() ;
+      musiqueDeFond.play() ;
     }
     sonClic.rewind() ;
     sonClic.play() ;
@@ -272,10 +281,14 @@ void keyTyped () {
 void checkReponse() {      // fonction qui verifie si les réponses écrites sont juste pour passer à la suivante 
   if ((questionPosee == 1 && reponseEcrite == "10*10") || (questionPosee == 2 && reponseEcrite == "2" && step == 4) || (questionPosee == 3 && reponseEcrite.toLowerCase() == pseudo.toLowerCase()) || (questionPosee == 4 && reponseEcrite == "4")) {
     globalScreen = "bonne réponse" ;
+    sonBonneReponse.rewind() ;
+    sonBonneReponse.play() ;
   } else {      // fonction qui fait perdre une vie si la réponse écrite est fausse et perdre le niveau si le joueur n'a plus de vie
     life-- ; 
     if (life == 0) {
       globalScreen = "mauvaise réponse" ;
+      sonMauvaiseReponse.rewind() ;
+      sonMauvaiseReponse.play () ;
     }
   }
 }
@@ -440,4 +453,12 @@ void question5niveau1() {
   } else if (mouseX>minXbonneReponse && mouseX<maxXbonneReponse && mouseY >minYbonneReponse && mouseY <maxYbonneReponse) { // vérifie si la souris pointe bien sur la question
     cursor(HAND);
   } else cursor(ARROW);
+}
+
+void pauseMusique() {
+  if (musiqueDeFond.isPlaying()) musiqueDeFond.pause() ;
+  if (musiqueNiveau1.isPlaying()) musiqueNiveau1.pause() ;
+  if (musiqueNiveau2.isPlaying()) musiqueNiveau2.pause() ;
+  if (musiqueNiveau3.isPlaying()) musiqueNiveau3.pause() ;
+  if (winDuNiveau.isPlaying()) winDuNiveau.pause() ;
 }
