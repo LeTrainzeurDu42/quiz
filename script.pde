@@ -41,6 +41,17 @@ PImage[][][] reponsesQCM = new PImage[2][5][4];
 PImage[][][] reponsesQCMsurb = new PImage[2][5][4];
 
 
+import ddf.minim.*;
+Minim minim;
+AudioSnippet musiqueDeFond ;
+AudioSnippet sonClic ;
+AudioSnippet musiqueNiveau1 ;
+AudioSnippet musiqueNiveau2 ;
+AudioSnippet musiqueNiveau3 ;
+AudioSnippet sonBonneReponse ;
+AudioSnippet sonMauvaiseReponse ;
+AudioSnippet winDuNiveau ;
+
 
 int minXbonneReponse;
 int maxXbonneReponse;
@@ -109,7 +120,20 @@ void setup() {
   // chargement de l'image pour l'écran de commentaire du pseudo
   if (indexpseudo <= 2) screenPseudo = loadImage("screen_after_nickname_2.png");
   else screenPseudo = loadImage("screen_after_nickname.png");
+minim = new Minim(this);
+musiqueDeFond = minim.loadSnippet("musique de fond accueil.mp3") ;  
+sonClic = minim.loadSnippet("son du clic.mp3") ;
+musiqueNiveau1 = minim.loadSnippet("musique de fond niveau 1.mp3") ;
+musiqueNiveau2 = minim.loadSnippet("hymne sri lanka niveau 2.mp3") ;
+musiqueNiveau3 = minim.loadSnippet("musique de fond niveau 3.mp3") ;
+sonBonneReponse = minim.loadSnippet("son si bonne réponse.mp3") ;
+sonMauvaiseReponse = minim.loadSnippet("son si mauvaise réponse.wav") ;
+winDuNiveau = minim.loadSnippet("son de win de niveau.wav") ;
+musiqueDeFond.rewind() ;
+musiqueDeFond.loop() ;
+musiqueDeFond.play() ;
 }
+
 
 
 void draw() {
@@ -124,9 +148,9 @@ void draw() {
   } else if (globalScreen == "question") {
     question();
   } else if (globalScreen == "bonne réponse") {
-    bonneReponse();
+ //   bonneReponse();
   } else if (globalScreen == "mauvaise réponse") {
-    mauvaiseReponse();
+   // mauvaiseReponse();
   } else if (globalScreen == "écran commentaire pseudo") {
     commentairePseudo();
   }
@@ -153,26 +177,42 @@ void mouseClicked() {
       questionPosee = 1 ;
       niveauEnCours = 1 ;
       life = 4 ;
+      musiqueDeFond.pause() ;
+      musiqueNiveau1.rewind() ;
+      musiqueNiveau1.loop() ;
+      musiqueNiveau1.play() ;
     }
     if (mouseX> 40 && mouseX< 1220 && mouseY> 332 && mouseY< 509) {        // fonction qui vérifie le clic pour lancer le niveau 2
       globalScreen = "question" ;
       questionPosee = 1 ;
       niveauEnCours = 2 ;
       life = 3 ;
+      musiqueNiveau1.pause() ;
+      musiqueNiveau2.rewind() ;
+      musiqueNiveau2.loop() ;
+      musiqueNiveau2.play() ;
     }
     if (mouseX> 40 && mouseX< 1220 && mouseY> 551 && mouseY< 728) {        // fonction qui vérifie le clic pour lancer le niveau 3
       globalScreen = "question" ;
       questionPosee = 1 ;
       niveauEnCours = 3 ;
       life = 2 ;
+      musiqueNiveau2.pause() ;
+      musiqueNiveau3.rewind() ;
+      musiqueNiveau3.loop() ;
+      musiqueNiveau3.play() ;
     }
   }
   if (globalScreen == "question" && (niveauEnCours != 1 || questionPosee == 5 )) {        // fonction qui vérifie si la réponse sur laquelle on clic est la bonne
     if (mouseX > minXbonneReponse && mouseX < maxXbonneReponse && mouseY > minYbonneReponse && mouseY < maxYbonneReponse) {
+      sonBonneReponse.rewind() ;
+      sonBonneReponse.play() ;
       globalScreen = "bonne réponse" ;
     } else {        // fonction qui permet de gérer le nombre de vie en cas de mauvaise réponse
       life-- ;
       if ((life == 0) || (questionPosee == 5 && niveauEnCours == 3)) {         //permet de faire perdre le joueur à une question éliminatoire même si il lui reste des vies
+          sonMauvaiseReponse.rewind() ;
+          sonMauvaiseReponse.play() ;
           globalScreen = "mauvaise réponse" ;
         }
       }
@@ -185,6 +225,8 @@ void mouseClicked() {
   if (globalScreen == "bonne réponse") {        // fonction qui gère le changement de question et de niveau en cas de bonne réponse 
     if (questionPosee == 5) {
       if (niveauEnCours == level) {
+        winDuNiveau.rewind() ;
+        winDuNiveau.play() ;
         level++ ;
       } 
       globalScreen = "écran niveau" ;
@@ -197,6 +239,8 @@ void mouseClicked() {
   if (globalScreen == "mauvaise réponse") {
       globalScreen = "écran niveau" ;
     }
+    sonClic.rewind() ;
+    sonClic.play() ;
   }
 
 
@@ -326,7 +370,7 @@ void question() {
   if (niveauEnCours == 2 || (niveauEnCours == 3 && questionPosee != 1)) propositionsQCM(); // affichage des propositions QCM normales
   else if (niveauEnCours == 1 && questionPosee != 5) reponseAEcrire(); // affichage de l'interface d'écriture
   else if (niveauEnCours == 1 && questionPosee == 5) question5niveau1(); // affichage du niveau concerné (numéro question)
-  else if (niveauEnCours == 3 && questionPosee == 1) question1niveau3(); // (fiole violette)
+ // else if (niveauEnCours == 3 && questionPosee == 1) question1niveau3(); // (fiole violette)
 }
 
 void reponseAEcrire() { // pour toutes les questions du niveau 1 (sauf 5)
