@@ -172,16 +172,14 @@ void mouseClicked() {
       globalScreen = "bonne réponse" ;
     } else {        // fonction qui permet de gérer le nombre de vie en cas de mauvaise réponse
       life-- ;
-      if (life == 0) {
-        if (questionPosee == 5 && life == 0) {        //permet de faire perdre le joueur à une question éliminatoire même si il lui reste des vies
+      if ((life == 0) || (questionPosee == 5 && niveauEnCours == 3)) {         //permet de faire perdre le joueur à une question éliminatoire même si il lui reste des vies
           globalScreen = "mauvaise réponse" ;
         }
       }
     }
-  }
-  if (globalScreen == "question" && if (niveauEnCours == 1 && questionPosee != 5)) {        // fonction qui vérifie le clic du bouton valider pour les réponses écrites
-    if ((mouseX>367 && mouseX<367+545 && mouseY>549 && mouseY<549+110) || (key == RETURN)) {
-      questionPosee++ ;
+  if (globalScreen == "question" && (niveauEnCours == 1 && questionPosee != 5)) {        // fonction qui vérifie le clic du bouton valider pour les réponses écrites
+    if (mouseX>367 && mouseX<367+545 && mouseY>549 && mouseY<549+110) {
+      checkReponse() ;
     }
   }
   if (globalScreen == "bonne réponse") {        // fonction qui gère le changement de question et de niveau en cas de bonne réponse 
@@ -193,26 +191,13 @@ void mouseClicked() {
     } else { 
       globalScreen = "question" ;
       questionPosee++ ;
-      int[] melanger(int[]arr) { // mélange un array d'entiers
-        int valeurARemplacer;
-        int index;
-        for (int i = 0; i < arr.length; i++) {
-          index  = (int)random(arr.length); // prendre un nouvel index au hasard
-          valeurARemplacer = arr[i]; // stocke l'ancienne valeur à échanger
-          arr[i] = arr[index]; // échange les 2 valeurs
-          arr[index] = valeurARemplacer;
-        }
-        return arr;
-      }
+      answersOrderQCM = melanger(answersOrderQCM) ;
     }
   }
   if (globalScreen == "mauvaise réponse") {
-    life-- ;
-    if (life == 0) {
       globalScreen = "écran niveau" ;
     }
   }
-}
 
 
 
@@ -288,9 +273,10 @@ void ecranNom() {
   //  POUR POUVOIR AFFICHER LE NOM (ou décrémenter en effacant) = cf https://processing.org/reference/keyTyped_.html pour la doc sur la fonction keyTyped) (en cours)
 }
 
+
+
 void ecranNiveau() {
   image(bgLevels, 0, 0);
-
   if (mouseX > 40 && mouseX < 1220 && mouseY > 113 && mouseY < 290) {
     image(level1PresentationSurb, 0, 92);
   } else {
@@ -380,7 +366,17 @@ void propositionsQCM() {
 }
 
 
-
+int[] melanger(int[]arr) { // mélange un array d'entiers
+        int valeurARemplacer;
+        int index;
+        for (int i = 0; i < arr.length; i++) {
+          index  = (int)random(arr.length); // prendre un nouvel index au hasard
+          valeurARemplacer = arr[i]; // stocke l'ancienne valeur à échanger
+          arr[i] = arr[index]; // échange les 2 valeurs
+          arr[index] = valeurARemplacer;
+        }
+        return arr;
+      }
 
 void question5niveau1() {
   image(formQuestion, 0, 0); // écran pour écrire mais non utilisable
