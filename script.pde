@@ -1,4 +1,4 @@
-String globalScreen; // variable permettant de connaître l'écran actuel //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+String globalScreen; // variable permettant de connaître l'écran actuel //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 int level = 1 ; //niveau maximal disponible pour le joueur
 int niveauEnCours;
 int questionPosee;
@@ -173,8 +173,15 @@ void mouseClicked() {
     } else {        // fonction qui permet de gérer le nombre de vie en cas de mauvaise réponse
       life-- ;
       if (life == 0) {
-        globalScreen = "mauvaise réponse" ;
+        if (questionPosee == 5 && life == 0) {        //permet de faire perdre le joueur à une question éliminatoire même si il lui reste des vies
+          globalScreen = "mauvaise réponse" ;
+        }
       }
+    }
+  }
+  if (globalScreen == "question" && if (niveauEnCours == 1 && questionPosee != 5)) {        // fonction qui vérifie le clic du bouton valider pour les réponses écrites
+    if ((mouseX>367 && mouseX<367+545 && mouseY>549 && mouseY<549+110) || (key == RETURN)) {
+      questionPosee++ ;
     }
   }
   if (globalScreen == "bonne réponse") {        // fonction qui gère le changement de question et de niveau en cas de bonne réponse 
@@ -186,6 +193,23 @@ void mouseClicked() {
     } else { 
       globalScreen = "question" ;
       questionPosee++ ;
+      int[] melanger(int[]arr) { // mélange un array d'entiers
+        int valeurARemplacer;
+        int index;
+        for (int i = 0; i < arr.length; i++) {
+          index  = (int)random(arr.length); // prendre un nouvel index au hasard
+          valeurARemplacer = arr[i]; // stocke l'ancienne valeur à échanger
+          arr[i] = arr[index]; // échange les 2 valeurs
+          arr[index] = valeurARemplacer;
+        }
+        return arr;
+      }
+    }
+  }
+  if (globalScreen == "mauvaise réponse") {
+    life-- ;
+    if (life == 0) {
+      globalScreen = "écran niveau" ;
     }
   }
 }
@@ -267,26 +291,26 @@ void ecranNom() {
 void ecranNiveau() {
   image(bgLevels, 0, 0);
 
-  if (mouseX > 40 && mouseX < 1220 && mouseY > 113 && mouseY < 290) { //<>//
+  if (mouseX > 40 && mouseX < 1220 && mouseY > 113 && mouseY < 290) {
     image(level1PresentationSurb, 0, 92);
   } else {
-    image(level1Presentation, 0, 92); //<>//
+    image(level1Presentation, 0, 92);
   }
 
-  if (level < 2) { //<>//
+  if (level < 2) {
     image(noPresentation, 0, 311);
   } else if (mouseX > 40 && mouseX < 1220 && mouseY > 332 && mouseY < 509) {
-    image(level2PresentationSurb, 0, 311); //<>//
+    image(level2PresentationSurb, 0, 311);
   } else {
-    image(level2Presentation, 0, 311); //<>//
+    image(level2Presentation, 0, 311);
   }
 
-  if (level < 3) { //<>//
+  if (level < 3) {
     image(noPresentation, 0, 530);
   } else if (mouseX > 40 && mouseX < 1220 && mouseY > 551 && mouseY < 728) {
-    image(level3PresentationSurb, 0, 530); //<>//
+    image(level3PresentationSurb, 0, 530);
   } else {
-    image(level3Presentation, 0, 530); //<>//
+    image(level3Presentation, 0, 530);
   }
 }
 
@@ -314,7 +338,7 @@ void question() {
 
   // affichage des réponses 
   if (niveauEnCours == 2 || (niveauEnCours == 3 && questionPosee != 1)) propositionsQCM(); // affichage des propositions QCM normales
-  else if (niveauEnCours == 1 && questionPosee != 5) reponseAEcrire(); // affichage de l'interface d'écritur
+  else if (niveauEnCours == 1 && questionPosee != 5) reponseAEcrire(); // affichage de l'interface d'écriture
   else if (niveauEnCours == 1 && questionPosee == 5) question5niveau1(); // affichage du niveau concerné (numéro question)
   else if (niveauEnCours == 3 && questionPosee == 1) question1niveau3(); // (fiole violette)
 }
@@ -356,17 +380,6 @@ void propositionsQCM() {
 }
 
 
-int[] melanger(int[]arr) { // mélange un array d'entiers
-  int valeurARemplacer;
-  int index;
-  for (int i = 0; i < arr.length; i++) {
-    index  = (int)random(arr.length); // prendre un nouvel index au hasard
-    valeurARemplacer = arr[i]; // stocke l'ancienne valeur à échanger
-    arr[i] = arr[index]; // échange les 2 valeurs
-    arr[index] = valeurARemplacer;
-  }
-  return arr;
-}
 
 
 void question5niveau1() {
